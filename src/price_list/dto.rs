@@ -3,19 +3,21 @@ use validator::Validate;
 
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreatePriceItemDto {
+    #[validate(range(min = 1, message = "Item number is required!"))]
     item_number: u32,
 
     #[validate(length(min = 1, message = "Name is required!"))]
     name: String,
 
-    materials_cost: f64,
+    #[validate(range(min = 0.1, message = "Material cost is required!"))]
+    material_cost: f64,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct PriceItemsFilters {
     item_number: Option<u32>,
     name: Option<String>,
-    materials_cost: Option<f64>,
+    material_cost: Option<f64>,
 }
 
 #[derive(Debug, Serialize)]

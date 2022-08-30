@@ -20,7 +20,7 @@ async fn app() -> Router {
 
     println!("Connected to mongodb!");
 
-    Router::new()
+    Router::new().merge(price_list::routes::price_items::get_routes())
 }
 
 async fn connect_to_mongo_db(config: &config::MongoConfig) -> Database {

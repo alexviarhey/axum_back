@@ -20,3 +20,4 @@ mongodb = "2.1"
 bson = { version = "2", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
 chrono = "0.4" # Used for setting DateTimes
 dotenv = "0.15.0"
+thiserror = "1.0.32"

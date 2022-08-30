@@ -4,31 +4,45 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 #[serde(untagged)]
-enum ResultCode {
-    Ok,
-    Err,
+pub enum ResultCode {
+    Ok = 0,
+    Err = 1,
 }
 
 #[derive(Serialize)]
-pub struct CustomResponse<T> {
-    result_code: ResultCode,
-    messages: Option<Vec<String>>,
-    data: Option<T>,
+pub struct CustomResponse<B = ()> {
+    pub result_code: ResultCode,
+    pub data: Option<B>,
+    pub message: Option<String>,
 }
 
-impl<T> Default for CustomResponse<T> {
-    fn default() -> Self {
+impl<B> CustomResponse<B> {
+    fn new(result_code: ResultCode, data: Option<B>, message: Option<String>) -> Self {
         Self {
-            result_code: ResultCode::Ok,
-            messages: None,
+            result_code,
+            data,
+            message,
+        }
+    }
+
+    pub fn with_error_message(message: &str) -> Self {
+        Self {
+            result_code: ResultCode::Err,
             data: None,
+            message: Some(message.to_string()),
         }
     }
 }
 
-impl<T> IntoResponse for CustomResponse<T>
+impl<B> Default for CustomResponse<B> {
+    fn default() -> Self {
+        Self::new(ResultCode::Ok, None, None)
+    }
+}
+
+impl<B> IntoResponse for CustomResponse<B>
 where
-    T: Serialize,
+    B: Serialize,
 {
     fn into_response(self) -> Response {
         let custom_response = serde_json::to_string(&self).unwrap();
@@ -37,21 +51,7 @@ where
 }
 
 pub trait IntoCustomResponse {
-    type Data: Serialize;
-    fn into_custom_response(self) -> CustomResponse<Self::Data>;
-}
+    type Body: Serialize;
 
-impl<T> IntoCustomResponse for T
-where
-    T: Serialize,
-{
-    type Data = T;
-
-    fn into_custom_response(self) -> CustomResponse<T> {
-        CustomResponse {
-            result_code: ResultCode::Ok,
-            messages: None,
-            data: Some(self),
-        }
-    }
+    fn into_custom_response(self) -> CustomResponse<Self::Body>;
 }
