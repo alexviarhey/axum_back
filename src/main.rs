@@ -1,9 +1,11 @@
-use axum::Router;
-use mongodb::{Client, Database};
-
 mod config;
+mod infra;
 mod lib;
 mod price_list;
+
+use axum::Router;
+use config::Config;
+use infra::databases::mongo;
 
 #[tokio::main]
 async fn main() {
@@ -14,18 +16,13 @@ async fn main() {
 }
 
 async fn app() -> Router {
-    let config = config::Config::new();
+    let config = Config::new();
 
-    connect_to_mongo_db(&config.mongo).await;
+    let database = mongo::connect(&config.mongo.mongo_uri, &config.mongo.db_name).await;
 
-    println!("Connected to mongodb!");
-
-    Router::new().merge(price_list::routes::price_items::get_routes())
+    initialize_routes()
 }
 
-async fn connect_to_mongo_db(config: &config::MongoConfig) -> Database {
-    Client::with_uri_str(&config.mongo_uri)
-        .await
-        .expect("Unable to connect to mongodb")
-        .database(&config.db_name)
+fn initialize_routes() -> Router {
+    Router::new().merge(price_list::routes::price_items::routes())
 }

@@ -5,7 +5,7 @@ use crate::{
     price_list::dto::{CreatePriceItemDto, PriceItemsFilters},
 };
 
-pub fn get_routes() -> Router {
+pub fn routes() -> Router {
     Router::new().route(
         "/price-items",
         post(create_price_item_handler).get(get_price_item_handler),
