@@ -1,11 +1,10 @@
-mod config;
+mod app;
 mod infra;
 mod lib;
-mod price_list;
 
+use app::price_list;
 use axum::Router;
-use config::Config;
-use infra::databases::mongo;
+use infra::{config::Config, databases::mongo};
 
 #[tokio::main]
 async fn main() {
@@ -18,11 +17,11 @@ async fn main() {
 async fn app() -> Router {
     let config = Config::new();
 
-    let database = mongo::connect(&config.mongo.mongo_uri, &config.mongo.db_name).await;
+    mongo::connect(&config.mongo.mongo_uri, &config.mongo.db_name).await;
 
     initialize_routes()
 }
 
 fn initialize_routes() -> Router {
-    Router::new().merge(price_list::routes::price_items::routes())
+    Router::new().merge(price_list::routes::get_routes())
 }
