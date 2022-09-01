@@ -2,17 +2,17 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct QueryPagination {
-    page: usize,
-    size: usize,
+    page: i64,
+    size: i64,
 }
 
 impl QueryPagination {
-    pub fn skip(&self) -> usize {
-        self.page * self.size
+    pub fn skip(&self) -> Option<u64> {
+        Some((self.page * self.size) as u64)
     }
 
-    pub fn limit(&self) -> usize {
-        self.size
+    pub fn limit(&self) -> Option<i64> {
+        Some(self.size)
     }
 }
 

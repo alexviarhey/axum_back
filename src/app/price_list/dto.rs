@@ -20,3 +20,9 @@ pub struct PriceItemDto {
     pub name: String,
     pub material_cost: f64,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct PriceItemsFilter {
+    pub item_number: Option<u32>,
+    pub name: Option<String>,
+}

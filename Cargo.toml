@@ -16,8 +16,9 @@ validator = { version = "0.16.0", features = ["derive"] }
 http-body = "0.4.5"
 async-trait = "0.1"
 hyper = { version = "0.14", features = ["full"] }
-mongodb = "2.1"
+mongodb = "2.3.0"
 bson = { version = "2", features = ["chrono-0_4"] } # Needed for using chrono datetime in doc
 chrono = "0.4" # Used for setting DateTimes
 dotenv = "0.15.0"
 thiserror = "1.0.32"
+futures = "0.3"
