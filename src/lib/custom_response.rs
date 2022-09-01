@@ -2,14 +2,14 @@ use axum::response::{IntoResponse, Response};
 use hyper::StatusCode;
 use serde::Serialize;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum ResultCode {
     Ok = 0,
     Err = 1,
 }
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct CustomResponse<B = ()> {
     pub result_code: ResultCode,
     pub data: Option<B>,
@@ -22,6 +22,14 @@ impl<B> CustomResponse<B> {
             result_code,
             data,
             message,
+        }
+    }
+
+    pub fn success(data: B, message: &str) -> Self {
+        Self {
+            result_code: ResultCode::Ok,
+            data: Some(data),
+            message: Some(message.to_string()),
         }
     }
 
@@ -54,4 +62,20 @@ pub trait IntoCustomResponse {
     type Body: Serialize;
 
     fn into_custom_response(self) -> CustomResponse<Self::Body>;
+}
+
+#[derive(Debug)]
+struct CustomResponseBuilder<T: Serialize> {
+    custom_response: CustomResponse<T>,
+}
+
+impl<T> CustomResponseBuilder<T>
+where
+    T: Serialize,
+{
+    fn new() -> Self {
+        Self {
+            custom_response: CustomResponse::default(),
+        }
+    }
 }
