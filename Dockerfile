@@ -54,4 +54,4 @@ WORKDIR /usr/src/dca_api
 USER rust:rust
 
 # Run applicatin
-CMD ["./axum_back"]
+CMD ["./dca-back-staging"]
