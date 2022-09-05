@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use axum::{
     body::Bytes,
     extract::{FromRequest, RequestParts},
-    BoxError, Form,
+    BoxError,
 };
 use serde::de::DeserializeOwned;
 use validator::Validate;

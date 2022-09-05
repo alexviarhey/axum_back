@@ -11,14 +11,20 @@ pub struct CreatePriceItemDto {
 
     #[validate(range(min = 0.01, message = "Material cost must be grater than 0.01"))]
     pub material_cost: f64,
+
+    #[validate(range(min = 0.01, message = "Service cost must be grater than 0.01"))]
+    pub service_cost: f64,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PriceItemDto {
     pub id: String,
     pub item_number: u32,
     pub name: String,
     pub material_cost: f64,
+    pub service_cost: f64,
+    pub price_subgroup_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

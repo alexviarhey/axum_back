@@ -4,24 +4,45 @@ mod lib;
 
 use app::price_list;
 use axum::Router;
-use infra::{config::Config, databases::mongo};
+use infra::{
+    config::{Config, ServiceConfig},
+    databases::mongo,
+};
+use mongodb::Database;
 
 #[tokio::main]
 async fn main() {
-    axum::Server::bind(&"127.0.0.1:8000".parse().unwrap())
-        .serve(app().await.into_make_service())
+    let state = run_infrastructure().await;
+    let addr = format!("{}:{}", state.service.address, state.service.port);
+
+    println!("Server started at {}", addr);
+
+    axum::Server::bind(&addr.parse().unwrap())
+        .serve(create_router().into_make_service())
         .await
         .unwrap();
 }
 
-async fn app() -> Router {
+async fn run_infrastructure() -> State {
     let config = Config::new();
 
-    mongo::connect(&config.mongo.mongo_uri, &config.mongo.db_name).await;
+    let db = mongo::connect(&config.mongo.mongo_uri, &config.mongo.db_name).await;
 
-    initialize_routes()
+    State {
+        db,
+        service: config.service,
+    }
 }
 
-fn initialize_routes() -> Router {
-    Router::new().merge(price_list::routes::get_routes())
+fn create_router() -> Router {
+    Router::new().nest(
+        "/api/v1",
+        Router::new().merge(price_list::routes::get_routes()),
+    )
+}
+
+#[derive(Debug)]
+struct State {
+    db: &'static Database,
+    service: ServiceConfig,
 }

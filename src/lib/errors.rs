@@ -1,4 +1,8 @@
-use super::custom_response::{CustomResponse, IntoCustomResponse};
+use std::collections::HashMap;
+
+use super::custom_response::{
+    CustomResponse, CustomResponseBuilder, IntoCustomResponse, ResultCode,
+};
 use axum::response::IntoResponse;
 use thiserror::Error;
 
@@ -15,12 +19,32 @@ impl IntoCustomResponse for ValidationRejection {
     type Body = ();
 
     fn into_custom_response(self) -> CustomResponse<Self::Body> {
-        let message = match self {
-            ValidationRejection::ValidationError(_) => format!("[{}]", self).replace('\n', ", "),
-            ValidationRejection::FailedToDeserializeBody(_) => format!("{}", self),
-        };
+        match self {
+            ValidationRejection::ValidationError(_) => {
+                let mut validation_errors: HashMap<String, String> = HashMap::new();
 
-        CustomResponse::with_error_message(&message)
+                format!("{}", self)
+                    .replace('\n', ", ")
+                    .split(", ")
+                    .for_each(|err| {
+                        let splitted_err: Vec<&str> = err.split(":").collect();
+
+                        validation_errors.insert(
+                            splitted_err[0].to_string(),
+                            splitted_err[1].trim().to_string(),
+                        );
+                    });
+
+                CustomResponseBuilder::new()
+                    .result_code(ResultCode::Err)
+                    .validation_errors(validation_errors)
+                    .build()
+            }
+            ValidationRejection::FailedToDeserializeBody(_) => CustomResponseBuilder::new()
+                .result_code(ResultCode::Err)
+                .message(format!("{}", self).as_str())
+                .build(),
+        }
     }
 }
 

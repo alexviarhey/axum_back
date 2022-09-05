@@ -1,50 +1,46 @@
+use std::collections::HashMap;
+
 use axum::response::{IntoResponse, Response};
 use hyper::StatusCode;
 use serde::Serialize;
+use serde_repr::Serialize_repr;
 
-#[derive(Debug, Serialize)]
-#[serde(untagged)]
+#[derive(Debug, Serialize_repr)]
+#[repr(u8)]
+
 pub enum ResultCode {
     Ok = 0,
     Err = 1,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CustomResponse<B = ()> {
     pub result_code: ResultCode,
     pub data: Option<B>,
     pub message: Option<String>,
+    pub validation_errors: Option<HashMap<String, String>>,
 }
 
 impl<B> CustomResponse<B> {
-    fn new(result_code: ResultCode, data: Option<B>, message: Option<String>) -> Self {
+    fn new(
+        result_code: ResultCode,
+        data: Option<B>,
+        message: Option<String>,
+        validation_errors: Option<HashMap<String, String>>,
+    ) -> Self {
         Self {
             result_code,
             data,
             message,
-        }
-    }
-
-    pub fn success(data: B, message: &str) -> Self {
-        Self {
-            result_code: ResultCode::Ok,
-            data: Some(data),
-            message: Some(message.to_string()),
-        }
-    }
-
-    pub fn with_error_message(message: &str) -> Self {
-        Self {
-            result_code: ResultCode::Err,
-            data: None,
-            message: Some(message.to_string()),
+            validation_errors,
         }
     }
 }
 
 impl<B> Default for CustomResponse<B> {
     fn default() -> Self {
-        Self::new(ResultCode::Ok, None, None)
+        Self::new(ResultCode::Ok, None, None, None)
     }
 }
 
@@ -91,6 +87,11 @@ where
 
     pub fn message(mut self, message: &str) -> Self {
         self.custom_response.message = Some(message.to_string());
+        self
+    }
+
+    pub fn validation_errors(mut self, errors: HashMap<String, String>) -> Self {
+        self.custom_response.validation_errors = Some(errors);
         self
     }
 

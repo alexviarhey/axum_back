@@ -1,16 +1,19 @@
-use mongodb::{Client, Collection, Database};
+use mongodb::{options::ClientOptions, Client, Collection, Database};
 
 static mut CONNECTION: Option<Database> = None;
 
-pub async fn connect(uri: &str, db_name: &str) {
-    let connetion = Client::with_uri_str(uri)
+pub async fn connect(uri: &str, db_name: &str) -> &'static Database {
+    let client_options = ClientOptions::parse(uri)
         .await
-        .expect("Unable to connect to mongodb")
+        .expect("Mongo uri parsing error");
+
+    let connection = Client::with_options(client_options)
+        .expect("Cannot create mongo options")
         .database(db_name);
 
-    println!("Connect to mongodb!");
+    unsafe { CONNECTION = Some(connection) };
 
-    unsafe { CONNECTION = Some(connetion) }
+    get_connection()
 }
 
 pub fn get_collection<T>(name: &str) -> Collection<T> {
@@ -18,7 +21,7 @@ pub fn get_collection<T>(name: &str) -> Collection<T> {
     connection.collection::<T>(name)
 }
 
-fn get_connection() -> &'static Database {
+pub fn get_connection() -> &'static Database {
     unsafe {
         CONNECTION
             .as_ref()
