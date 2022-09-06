@@ -5,7 +5,7 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn earew() -> Self {
+    pub fn new() -> Self {
         let app_mode = std::env::var("APP_MODE").unwrap_or_else(|_| "development".to_string());
 
         dotenv::from_filename(format!(".env.{}", app_mode)).ok();
